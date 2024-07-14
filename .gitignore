@@ -1,0 +1,8 @@
+# ignore testing file
+result.csv
+billboard.csv
+# Ignore OS-specific files
+.DS_Store
+
+# Ignore IDE specific files
+.vscode/
