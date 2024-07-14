@@ -6,3 +6,5 @@ billboard.csv
 
 # Ignore IDE specific files
 .vscode/
+
+.ipynb_checkpoints
