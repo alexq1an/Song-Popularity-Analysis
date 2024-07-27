@@ -38,7 +38,7 @@ def main():
     # Define the preprocessing steps
     preprocessor = ColumnTransformer([
         ('minmax', MinMaxScaler(), [
-            'year', 'tempo', 'duration_mins', 'loudness', 
+            'tempo', 'duration_mins', 'loudness', 
             'energy', 'speechiness', 'danceability', 'liveness', 
             'instrumentalness', 'valence',  
             'acousticness'
@@ -124,41 +124,43 @@ def main():
     X_test_preprocessed = preprocessor.transform(X_test)
     print(f"X_train_preprocessed shape: {X_train_preprocessed.shape}")
     print(f"X_test_preprocessed shape: {X_test_preprocessed.shape}")
-    param_grid = {
-        'n_estimators': [100, 200, 300],
-        'max_depth': [None, 10, 20, 30],
-        'min_samples_split': [2, 5, 10],
-        'min_samples_leaf': [1, 2, 4],
-        'max_features': ['auto', 'sqrt']
+
+    # Use the best parameters to initialize and train the RandomForestRegressor
+    best_params = {
+        'max_depth': None,
+        'max_features': 'sqrt',
+        'min_samples_leaf': 1,
+        'min_samples_split': 2,
+        'n_estimators': 200
     }
 
     # Initialize and train the RandomForestRegressor
-    model_rf = RandomForestRegressor(random_state=42)
+    model_rf = RandomForestRegressor(
+        max_depth=best_params['max_depth'],
+        max_features=best_params['max_features'],
+        min_samples_leaf=best_params['min_samples_leaf'],
+        min_samples_split=best_params['min_samples_split'],
+        n_estimators=best_params['n_estimators'],
+        random_state=42
+    )
 
-    # use GridSearchCV to adjust parameters
-    grid_search = GridSearchCV(estimator=model_rf, param_grid=param_grid,
-                            cv=3, n_jobs=-1, verbose=2)
-
-    grid_search.fit(X_train_preprocessed, y_train)
-
-    best_params = grid_search.best_params_
-    print(f"Best parameters: {best_params}")
-
-    best_model = grid_search.best_estimator_
+    # Fit the model
+    model_rf.fit(X_train_preprocessed, y_train)
 
     # Make predictions
-    y_pred = best_model.predict(X_test_preprocessed)
+    y_pred = model_rf.predict(X_test_preprocessed)
 
     # Evaluate the model
     mse = mean_squared_error(y_test, y_pred)
     r2 = r2_score(y_test, y_pred)
-    score1 = best_model.score(X_train_preprocessed, y_train)
-    score2 = best_model.score(X_test_preprocessed, y_test)
+    score1 = model_rf.score(X_train_preprocessed, y_train)
+    score2 = model_rf.score(X_test_preprocessed, y_test)
 
-    print(f"Model train score: {score1}")
-    print(f"Model test score: {score2}")
+    print(f"Model: {model_rf}")
+    print(f"Accuracy on Test Set for {model_rf} = {r2:.2f}\n")
     print(f"Mean Squared Error: {mse}")
-    print(f"R-squared: {r2}")
+    print(f"Model train score: {score1}")
+    print(f"Model test score: {score2}\n\n")
 
 
     # kmean
