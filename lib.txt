@@ -1,6 +1,7 @@
 pip install requests
 pip install mutagen
 pip3 install torch torchvision torchaudio
+pip install imblearn
 
 python3 cleanData.py
 python3 dataAnalysis.py
