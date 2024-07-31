@@ -2,6 +2,9 @@ pip install requests
 pip install mutagen
 pip3 install torch torchvision torchaudio
 pip install imblearn
+pip install seaborn
+pip install tqdm
+
 
 python3 cleanData.py
 python3 dataAnalysis.py
