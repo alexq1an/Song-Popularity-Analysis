@@ -383,7 +383,7 @@ def main(command, song_file):
 
 if __name__=='__main__':
     if len(sys.argv) < 3:
-        print("\nCommand or song file not given!\nUsage: python Predict.py <-knn, -svc, -rf, -nn> <song_file>")
+        print("\nCommand or song file not given!\nUsage: python Predict.py <-knn, -svc, -rf, -nn> test_song.flac")
         sys.exit(1)
 
     command = sys.argv[1]
