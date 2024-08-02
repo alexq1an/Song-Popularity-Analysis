@@ -1,0 +1,12 @@
+numpy
+pandas
+scikit-learn
+matplotlib
+requests
+seaborn
+tqdm
+mutagen
+torch
+torchvision
+torchaudio
+imbalanced-learn
