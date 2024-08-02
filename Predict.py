@@ -55,7 +55,7 @@ def get_song_features(song_file):
         print("No metadata extracted.")
 
     song_name = df.loc[0, 'title']
-    print(song_name)
+    print('The song to predict is :', song_name)
 
     client_id = 'f18099689fdd43ac9ced954177fcd3e6'
     client_secret = 'd0930ca7a5aa4cf6a138a61d4660c165' # use your id and key
@@ -134,7 +134,197 @@ class Net(nn.Module):
         x = self.fc4(x)
         return x
 
-def main(song_file):
+def knn_approach(song_file):
+    song_features = get_song_features(song_file)
+    data = pd.read_csv('result.csv')
+
+    from sklearn.model_selection import train_test_split
+    from sklearn.preprocessing import MinMaxScaler, OneHotEncoder, StandardScaler
+    from imblearn.over_sampling import SMOTE
+    from sklearn.compose import ColumnTransformer
+
+    y = data['popularity_level']
+    X = data.drop(columns=['popularity', 'popularity_level'])
+
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25, random_state=50)
+
+    # smote
+    smote = SMOTE(random_state=42)
+    X_train_resampled, y_train_resampled = smote.fit_resample(X_train, y_train)
+
+    # Define the preprocessing steps
+    preprocessor = ColumnTransformer([
+        ('minmax', MinMaxScaler(), [
+            'tempo', 'duration_ms', 'loudness', 
+            'energy', 'speechiness', 'danceability', 'liveness', 
+            'instrumentalness', 'valence', 'acousticness'
+        ]),
+        ('categorical', OneHotEncoder(), ['key'])
+    ], remainder='passthrough')
+
+    from sklearn.neighbors import KNeighborsClassifier
+    from sklearn.metrics import accuracy_score, classification_report
+    from sklearn.pipeline import make_pipeline
+
+    # Create a pipeline for KNN
+    pipeline_knn = make_pipeline(preprocessor, KNeighborsClassifier(
+        n_neighbors=2,
+    ))
+
+    # Fit the model on the resampled training data
+    pipeline_knn.fit(X_train_resampled, y_train_resampled)
+
+    # Make predictions
+    y_pred_knn = pipeline_knn.predict(X_test)
+
+    # Evaluate the model
+    accuracy_knn = accuracy_score(y_test, y_pred_knn)
+    train_score_knn = pipeline_knn.score(X_train_resampled, y_train_resampled)
+    test_score_knn = pipeline_knn.score(X_test, y_test)
+    cr_knn = classification_report(y_test, y_pred_knn)
+
+    print(f"Model: KNeighborsClassifier")
+    print(f"Accuracy on Test Set for KNeighborsClassifier = {accuracy_knn:}")
+    print(f"Train Score for KNeighborsClassifier = {train_score_knn:}")
+    print(f"Test Score for KNeighborsClassifier = {test_score_knn:}\n")
+    print(cr_knn)
+
+    result = pipeline_knn.predict(song_features)
+
+    if result == [0]:
+        print('The given song has low chance of getting popular')
+    elif result == [1]:
+        print('The given song has a moderate chance of getting popular')
+    elif result == [2]:
+        print('The given song has high chance of getting popular')
+
+def svc_approach(song_file):
+    song_features = get_song_features(song_file)
+
+    data = pd.read_csv('result.csv')
+
+    from sklearn.model_selection import train_test_split
+    from sklearn.preprocessing import MinMaxScaler, OneHotEncoder, StandardScaler
+    from imblearn.over_sampling import SMOTE
+    from sklearn.compose import ColumnTransformer
+
+    y = data['popularity_level']
+    X = data.drop(columns=['popularity', 'popularity_level'])
+
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25, random_state=50)
+
+    # smote
+    smote = SMOTE(random_state=42)
+    X_train_resampled, y_train_resampled = smote.fit_resample(X_train, y_train)
+
+    # Define the preprocessing steps
+    preprocessor = ColumnTransformer([
+        ('minmax', MinMaxScaler(), [
+            'tempo', 'duration_ms', 'loudness', 
+            'energy', 'speechiness', 'danceability', 'liveness', 
+            'instrumentalness', 'valence', 'acousticness'
+        ]),
+        ('categorical', OneHotEncoder(), ['key'])
+    ], remainder='passthrough')
+
+    from sklearn.svm import SVC
+    from sklearn.metrics import accuracy_score, classification_report
+    from sklearn.pipeline import make_pipeline
+
+    # Create the pipeline for SVC
+    pipeline_svc = make_pipeline(preprocessor, SVC( kernel = 'poly', C=2))
+
+    # Fit the model
+    pipeline_svc.fit(X_train_resampled, y_train_resampled)
+
+    # Make predictions
+    y_pred_svc = pipeline_svc.predict(X_test)
+
+    # Evaluate the model
+    accuracy_svc = accuracy_score(y_test, y_pred_svc)
+    train_score_svc = pipeline_svc.score(X_train_resampled, y_train_resampled)
+    test_score_svc = pipeline_svc.score(X_test, y_test)
+    cr_svc = classification_report(y_test, y_pred_svc)
+
+    print(f"Model: SVC")
+    print(f"Accuracy on Test Set for SVC = {accuracy_svc}")
+    print(f"Train Score for SVC = {train_score_svc}")
+    print(f"Test Score for SVC = {test_score_svc}\n")
+    print(cr_svc)
+
+    result = pipeline_svc.predict(song_features)
+
+    if result == [0]:
+        print('The given song has low chance of getting popular')
+    elif result == [1]:
+        print('The given song has a moderate chance of getting popular')
+    elif result == [2]:
+        print('The given song has high chance of getting popular')
+
+def rf_approach(song_file):
+    song_features = get_song_features(song_file)
+    data = pd.read_csv('result.csv')
+
+    from sklearn.model_selection import train_test_split
+    from sklearn.preprocessing import MinMaxScaler, OneHotEncoder, StandardScaler
+    from imblearn.over_sampling import SMOTE
+    from sklearn.compose import ColumnTransformer
+
+    y = data['popularity_level']
+    X = data.drop(columns=['popularity', 'popularity_level'])
+
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25, random_state=50)
+
+    from sklearn.model_selection import GridSearchCV
+    from sklearn.ensemble import RandomForestClassifier
+    from sklearn.metrics import mean_squared_error, r2_score
+
+    preprocessor_rf = ColumnTransformer([
+        ('minmax', StandardScaler(), [
+            'tempo', 'duration_ms', 'loudness', 
+            'energy', 'speechiness', 'danceability', 'liveness', 
+            'instrumentalness', 'valence', 'acousticness'
+        ]),
+        ('categorical', OneHotEncoder(), ['key'])
+    ], remainder='passthrough')
+
+    from sklearn.pipeline import make_pipeline
+
+    # Initialize and train the RandomForestRegressor
+    model_rf = make_pipeline(
+        preprocessor_rf,
+        RandomForestClassifier(n_estimators=250, 
+                               max_depth=50, 
+                               min_samples_leaf=7,
+                               max_features='sqrt',
+                               random_state=42)
+    )
+    model_rf.fit(X_train, y_train)
+
+    # Make predictions
+    y_pred = model_rf.predict(X_test)
+
+    # Evaluate the model
+    mse = mean_squared_error(y_test, y_pred)
+    r2 = r2_score(y_test, y_pred)
+    score1 = model_rf.score(X_train, y_train)
+    score2 = model_rf.score(X_test, y_test)
+
+    print(f"Model train score: {score1}")
+    print(f"Model test score: {score2}")
+    print(f"Mean Squared Error: {mse}")
+    print(f"R-squared: {r2}")
+
+    result = model_rf.predict(song_features)
+
+    if result == [0]:
+        print('The given song has low chance of getting popular')
+    elif result == [1]:
+        print('The given song has a moderate chance of getting popular')
+    elif result == [2]:
+        print('The given song has high chance of getting popular')
+
+def nn_approach(song_file):
     # Check if MPS is available and set the device accordingly
     if torch.cuda.is_available():
         device = 'cuda'
@@ -153,7 +343,7 @@ def main(song_file):
     model.to(device)
     model.eval()
 
-    # New data
+    # New song data
     song_features = get_song_features(song_file)
 
     # Transform new data using the same pipeline
@@ -170,13 +360,33 @@ def main(song_file):
     # Convert tensor to list and print (.numpy not working since lib conflict)
     result = predicted_classes.cpu().tolist()
     if result == [0]:
-        print('Low chance getting award')
+        print('The given song has low chance of getting popular')
     elif result == [1]:
-        print('Possibly getting award')
+        print('The given song has a moderate chance of getting popular')
     elif result == [2]:
-        print('High chance getting award')
+        print('The given song has high chance of getting popular')
+
+def main(command, song_file):
+
+    if command == '-knn':
+        knn_approach(song_file)
+    elif command == '-svc':
+        svc_approach(song_file)
+    elif command == '-rf':
+        rf_approach(song_file)
+    elif command == '-nn':
+        nn_approach(song_file)
+    else:
+        print('\n\nThe command isn\'t correct! Try -knn, -svc, -rf, -nn')
+
 
 
 if __name__=='__main__':
-    song_file = sys.argv[1]
-    main(song_file)
+    if len(sys.argv) < 3:
+        print("\nCommand or song file not given!\nUsage: python Predict.py <-knn, -svc, -rf, -nn> <song_file>")
+        sys.exit(1)
+
+    command = sys.argv[1]
+    song_file = sys.argv[2]
+
+    main(command, song_file)
