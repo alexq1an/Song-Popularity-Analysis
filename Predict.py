@@ -109,15 +109,15 @@ class Net(nn.Module):
         super(Net, self).__init__()
         self.fc1 = nn.Linear(input_size, 128)
         self.bn1 = nn.BatchNorm1d(128)
-        self.dropout1 = nn.Dropout(0.2)
+        self.dropout1 = nn.Dropout(0.45)
         
         self.fc2 = nn.Linear(128, 64)
         self.bn2 = nn.BatchNorm1d(64)
-        self.dropout2 = nn.Dropout(0.2)
+        self.dropout2 = nn.Dropout(0.45)
         
         self.fc3 = nn.Linear(64, 32)
         self.bn3 = nn.BatchNorm1d(32)
-        self.dropout3 = nn.Dropout(0.2)
+        self.dropout3 = nn.Dropout(0.45)
         
         self.fc4 = nn.Linear(32, 3)
     
